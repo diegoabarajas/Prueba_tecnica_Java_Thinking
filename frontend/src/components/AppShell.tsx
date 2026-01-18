@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 const linkStyle = ({ isActive }: { isActive: boolean }) => ({
@@ -20,6 +20,8 @@ const linkStyle = ({ isActive }: { isActive: boolean }) => ({
 
 export function AppShell() {
   const { isAuthed, isAdmin, auth, logout } = useAuth();
+  const { pathname } = useLocation();
+  const isLoginRoute = pathname === "/login";
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -50,7 +52,7 @@ export function AppShell() {
                 <LogoutIcon />
               </IconButton>
             </Box>
-          ) : (
+          ) : isLoginRoute ? null : (
             <Button component={NavLink} to="/login" variant="contained">
               Ingresar
             </Button>

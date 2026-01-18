@@ -15,6 +15,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -27,10 +30,12 @@ public class SecurityConfig {
 		// API simple para empezar: HTTP Basic + reglas por endpoint.
 		// Más adelante lo cambiamos a JWT si decides seguir ese camino.
 		http.csrf(csrf -> csrf.disable());
+		http.cors(Customizer.withDefaults());
 
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/api/health").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
 				.requestMatchers(HttpMethod.GET, "/api/empresas/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/inventario/**").permitAll()
@@ -58,6 +63,19 @@ public class SecurityConfig {
 					.orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 			return new User(u.getEmail(), u.getPasswordHash(), List.of(new SimpleGrantedAuthority("ROLE_" + u.getRol())));
 		};
+	}
+
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration cfg = new CorsConfiguration();
+		// Frontend Vite
+		cfg.setAllowedOrigins(List.of("http://localhost:5173"));
+		cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+		cfg.setAllowCredentials(true);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", cfg);
+		return source;
 	}
 }
 

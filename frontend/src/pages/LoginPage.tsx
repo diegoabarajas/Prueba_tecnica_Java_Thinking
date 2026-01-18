@@ -16,11 +16,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { FeedbackSnackbar, type Feedback } from "../components/FeedbackSnackbar";
+import { authApi } from "../api/auth";
+import { ApiError } from "../api/http";
 
 const schema = z.object({
   email: z.string().email("Correo inválido"),
   password: z.string().min(1, "La contraseña es requerida"),
-  role: z.enum(["ADMIN", "EXTERNO"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -40,14 +41,26 @@ export function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { role: "ADMIN" },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = async (v: FormValues) => {
-    // En esta fase usamos Basic Auth (rápido). Más adelante migramos a JWT.
-    loginBasic(v.email, v.password, v.role);
-    setFeedback({ open: true, severity: "success", message: "Sesión iniciada" });
-    navigate("/empresas", { replace: true });
+    // Validamos credenciales contra backend (evita “entrar” con credenciales incorrectas).
+    const basicToken = btoa(`${v.email}:${v.password}`);
+    try {
+      const me = await authApi.me(basicToken);
+      const role = me.role === "ADMIN" ? "ADMIN" : "EXTERNO";
+      loginBasic(v.email, v.password, role);
+      setFeedback({ open: true, severity: "success", message: "Sesión iniciada" });
+      navigate("/empresas", { replace: true });
+    } catch (e) {
+      const status = e instanceof ApiError ? e.status : undefined;
+      setFeedback({
+        open: true,
+        severity: "error",
+        message: status === 401 ? "Credenciales inválidas" : e instanceof Error ? e.message : "No se pudo iniciar sesión",
+      });
+    }
   };
 
   return (
@@ -83,17 +96,6 @@ export function LoginPage() {
               <Divider />
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-                <TextField
-                  label="Rol"
-                  select
-                  SelectProps={{ native: true }}
-                  defaultValue="ADMIN"
-                  helperText="En esta fase, el rol se usa para mostrar/ocultar acciones en UI."
-                  {...register("role")}
-                >
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="EXTERNO">EXTERNO</option>
-                </TextField>
                 <Box sx={{ flex: 1 }} />
                 <Button type="submit" variant="contained" disabled={isSubmitting} sx={{ minWidth: 160 }}>
                   {isSubmitting ? "Ingresando..." : "Ingresar"}

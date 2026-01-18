@@ -6,7 +6,7 @@ type AuthContextValue = {
   auth: AuthState;
   isAuthed: boolean;
   isAdmin: boolean;
-  loginBasic: (email: string, password: string, roleHint?: AuthState["role"]) => void;
+  loginBasic: (email: string, password: string, role: AuthState["role"]) => void;
   logout: () => void;
 };
 
@@ -22,9 +22,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       auth,
       isAuthed,
       isAdmin,
-      loginBasic(email, password, roleHint) {
+      loginBasic(email, password, role) {
         const basicToken = btoa(`${email}:${password}`);
-        const next: AuthState = { basicToken, email, role: roleHint };
+        const next: AuthState = { basicToken, email, role };
         setAuth(next);
         saveAuth(next);
       },
