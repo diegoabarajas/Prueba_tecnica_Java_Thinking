@@ -31,6 +31,19 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
+### Tests
+
+Para correr la suite de tests:
+
+```bash
+cd backend
+./mvnw test
+```
+
+Notas:
+- `PruebaTecnicaApplicationTests` corre con perfil `test` usando **H2 en memoria** (no requiere PostgreSQL local).
+- Los unit tests de servicios usan Mockito.
+
 ### Endpoints actuales (dev)
 
 - `GET /api/health` → `ok`
@@ -43,6 +56,15 @@ cd backend
 - **Inventario**
   - `GET /api/inventario?empresaNit=...` (público)
   - `GET /api/inventario/pdf?empresaNit=...` (público, descarga PDF)
+  - `POST /api/inventario/email` (ADMIN via Basic Auth, envía PDF por AWS SES)
+
+### AWS SES (dev local)
+
+Variables requeridas para enviar correo:
+- `AWS_REGION` (ej: `us-east-1`)
+- `AWS_SES_FROM` (email verificado en SES)
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
 
 ### Usuarios (dev)
 

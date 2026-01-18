@@ -5,7 +5,6 @@ import com.diegoabarajas.pruebatecnica.producto.Producto;
 import com.diegoabarajas.pruebatecnica.producto.ProductoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,11 +23,11 @@ class InventarioServiceTest {
 	@Mock
 	EmpresaRepository empresaRepository;
 
-	@InjectMocks
 	InventarioService inventarioService;
 
 	@Test
 	void list_whenEmpresaNitBlank_throws400() {
+		inventarioService = new InventarioService(productoRepository, empresaRepository, new InventarioPdfRenderer());
 		ResponseStatusException ex = assertThrows(ResponseStatusException.class,
 				() -> inventarioService.list(" "));
 		assertEquals(400, ex.getStatusCode().value());
@@ -36,6 +35,7 @@ class InventarioServiceTest {
 
 	@Test
 	void list_whenEmpresaNotFound_throws404() {
+		inventarioService = new InventarioService(productoRepository, empresaRepository, new InventarioPdfRenderer());
 		when(empresaRepository.existsById("900")).thenReturn(false);
 		ResponseStatusException ex = assertThrows(ResponseStatusException.class,
 				() -> inventarioService.list("900"));
@@ -44,6 +44,7 @@ class InventarioServiceTest {
 
 	@Test
 	void buildPdf_returnsNonEmptyBytes() {
+		inventarioService = new InventarioService(productoRepository, empresaRepository, new InventarioPdfRenderer());
 		when(empresaRepository.existsById("900")).thenReturn(true);
 		Producto p = new Producto();
 		p.setCodigo("P1");
