@@ -32,9 +32,11 @@ public class SecurityConfig {
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/api/health").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/empresas/**").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/empresas/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.PUT, "/api/empresas/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.DELETE, "/api/empresas/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
 				.anyRequest().authenticated()
 		);
 
