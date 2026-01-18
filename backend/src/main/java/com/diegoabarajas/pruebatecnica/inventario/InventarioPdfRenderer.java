@@ -4,13 +4,16 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,26 +26,103 @@ public class InventarioPdfRenderer {
 
 	public byte[] render(String empresaNit, List<InventarioItemResponse> items) throws IOException {
 		try (PDDocument doc = new PDDocument(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			float margin = 50;
-			float leading = 14f;
-
 			PDPage page = new PDPage(PDRectangle.LETTER);
 			doc.addPage(page);
+
+			float margin = 50f;
+			float tableTopPadding = 16f;
+			float rowPaddingY = 4f;
+
+			PDFont font = PDType1Font.HELVETICA;
+			PDFont fontBold = PDType1Font.HELVETICA_BOLD;
+			float fontSize = 10.5f;
+			float headerFontSize = 11f;
+
+			// Tabla con 3 columnas (código / nombre / características)
+			float pageWidth = page.getMediaBox().getWidth();
+			float tableX = margin;
+			float tableWidth = pageWidth - (margin * 2);
+
+			float colCode = 90f;
+			float colName = 170f;
+			float colFeatures = tableWidth - colCode - colName;
+
+			String generatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
 			PDPageContentStream cs = new PDPageContentStream(doc, page);
+			float y = page.getMediaBox().getHeight() - margin;
 
-			float y = startPage(cs, page, empresaNit, margin, leading, true);
+			// Título
+			cs.setFont(fontBold, 16);
+			writeText(cs, tableX, y, "Inventario - Empresa " + empresaNit);
+			y -= 18f;
+			cs.setFont(font, 10);
+			writeText(cs, tableX, y, "Generado: " + generatedAt);
+			y -= (tableTopPadding);
 
+			// Header (lo repetimos en cada página)
+			y = drawHeader(cs, y, tableX, tableWidth, colCode, colName, colFeatures, headerFontSize, fontBold, rowPaddingY);
+
+			boolean shade = false;
 			for (InventarioItemResponse it : items) {
-				if (y < margin) {
+				String code = safe(it.productoCodigo());
+				String name = safe(it.productoNombre());
+				String features = safe(it.caracteristicas());
+
+				List<String> codeLines = wrap(font, fontSize, code, colCode - 8);
+				List<String> nameLines = wrap(font, fontSize, name, colName - 8);
+				List<String> featLines = wrap(font, fontSize, features, colFeatures - 8);
+
+				int maxLines = Math.max(codeLines.size(), Math.max(nameLines.size(), featLines.size()));
+				float lineHeight = fontSize + 2f;
+				float rowHeight = (maxLines * lineHeight) + (rowPaddingY * 2);
+
+				// Si no cabe, nueva página
+				if (y - rowHeight < margin) {
 					cs.close();
 					page = new PDPage(PDRectangle.LETTER);
 					doc.addPage(page);
 					cs = new PDPageContentStream(doc, page);
-					y = startPage(cs, page, empresaNit, margin, leading, false);
+					y = page.getMediaBox().getHeight() - margin;
+
+					// En páginas siguientes, título más pequeño
+					cs.setFont(fontBold, 13);
+					writeText(cs, tableX, y, "Inventario - Empresa " + empresaNit);
+					y -= 16f;
+					cs.setFont(font, 10);
+					writeText(cs, tableX, y, "Generado: " + generatedAt);
+					y -= (tableTopPadding);
+
+					y = drawHeader(cs, y, tableX, tableWidth, colCode, colName, colFeatures, headerFontSize, fontBold, rowPaddingY);
 				}
-				String line = safe(it.productoCodigo()) + " | " + safe(it.productoNombre()) + " | " + safe(it.caracteristicas());
-				writeLine(cs, margin, y, line);
-				y -= leading;
+
+				// Background alternado para legibilidad
+				if (shade) {
+					cs.setNonStrokingColor(new Color(245, 245, 245));
+					cs.addRect(tableX, y - rowHeight, tableWidth, rowHeight);
+					cs.fill();
+				}
+				shade = !shade;
+
+				// Bordes
+				cs.setStrokingColor(new Color(210, 210, 210));
+				cs.addRect(tableX, y - rowHeight, tableWidth, rowHeight);
+				// divisiones verticales
+				cs.moveTo(tableX + colCode, y);
+				cs.lineTo(tableX + colCode, y - rowHeight);
+				cs.moveTo(tableX + colCode + colName, y);
+				cs.lineTo(tableX + colCode + colName, y - rowHeight);
+				cs.stroke();
+
+				// Texto
+				cs.setNonStrokingColor(Color.BLACK);
+				cs.setFont(font, fontSize);
+				float textY = y - rowPaddingY - fontSize;
+				drawCellLines(cs, tableX + 4, textY, codeLines, lineHeight);
+				drawCellLines(cs, tableX + colCode + 4, textY, nameLines, lineHeight);
+				drawCellLines(cs, tableX + colCode + colName + 4, textY, featLines, lineHeight);
+
+				y -= rowHeight;
 			}
 
 			cs.close();
@@ -51,35 +131,104 @@ public class InventarioPdfRenderer {
 		}
 	}
 
-	private static float startPage(
+	private static float drawHeader(
 			PDPageContentStream cs,
-			PDPage page,
-			String empresaNit,
-			float margin,
-			float leading,
-			boolean includeTitle
+			float y,
+			float tableX,
+			float tableWidth,
+			float colCode,
+			float colName,
+			float colFeatures,
+			float headerFontSize,
+			PDFont fontBold,
+			float rowPaddingY
 	) throws IOException {
-		float y = page.getMediaBox().getHeight() - margin;
+		float headerHeight = headerFontSize + 2f + (rowPaddingY * 2);
 
-		if (includeTitle) {
-			cs.setFont(PDType1Font.HELVETICA_BOLD, 16);
-			writeLine(cs, margin, y, "Inventario - Empresa " + empresaNit);
-			y -= (leading * 2);
-		}
+		cs.setNonStrokingColor(new Color(230, 230, 230));
+		cs.addRect(tableX, y - headerHeight, tableWidth, headerHeight);
+		cs.fill();
 
-		cs.setFont(PDType1Font.HELVETICA_BOLD, 12);
-		writeLine(cs, margin, y, "CODIGO | NOMBRE | CARACTERISTICAS");
-		y -= leading;
+		cs.setStrokingColor(new Color(180, 180, 180));
+		cs.addRect(tableX, y - headerHeight, tableWidth, headerHeight);
+		cs.moveTo(tableX + colCode, y);
+		cs.lineTo(tableX + colCode, y - headerHeight);
+		cs.moveTo(tableX + colCode + colName, y);
+		cs.lineTo(tableX + colCode + colName, y - headerHeight);
+		cs.stroke();
 
-		cs.setFont(PDType1Font.HELVETICA, 11);
-		return y;
+		cs.setNonStrokingColor(Color.BLACK);
+		cs.setFont(fontBold, headerFontSize);
+		float textY = y - rowPaddingY - headerFontSize;
+		writeText(cs, tableX + 4, textY, "Código");
+		writeText(cs, tableX + colCode + 4, textY, "Nombre");
+		writeText(cs, tableX + colCode + colName + 4, textY, "Características");
+
+		return y - headerHeight;
 	}
 
-	private static void writeLine(PDPageContentStream cs, float x, float y, String text) throws IOException {
+	private static void drawCellLines(PDPageContentStream cs, float x, float y, List<String> lines, float lineHeight) throws IOException {
+		float yy = y;
+		for (String line : lines) {
+			writeText(cs, x, yy, line);
+			yy -= lineHeight;
+		}
+	}
+
+	private static void writeText(PDPageContentStream cs, float x, float y, String text) throws IOException {
 		cs.beginText();
 		cs.newLineAtOffset(x, y);
-		cs.showText(text);
+		cs.showText(text == null ? "" : text);
 		cs.endText();
+	}
+
+	private static List<String> wrap(PDFont font, float fontSize, String text, float maxWidth) throws IOException {
+		String t = text == null ? "" : text.trim();
+		if (t.isEmpty()) return List.of("");
+
+		String[] words = t.split("\\s+");
+		List<String> lines = new ArrayList<>();
+		StringBuilder current = new StringBuilder();
+
+		for (String w : words) {
+			if (current.length() == 0) {
+				current.append(w);
+				continue;
+			}
+			String candidate = current + " " + w;
+			if (textWidth(font, fontSize, candidate) <= maxWidth) {
+				current.append(" ").append(w);
+			} else {
+				lines.add(truncateIfNeeded(font, fontSize, current.toString(), maxWidth));
+				current.setLength(0);
+				// palabra muy larga (sin espacios): la truncamos para no romper layout
+				if (textWidth(font, fontSize, w) <= maxWidth) {
+					current.append(w);
+				} else {
+					lines.add(truncateIfNeeded(font, fontSize, w, maxWidth));
+				}
+			}
+		}
+		if (current.length() > 0) {
+			lines.add(truncateIfNeeded(font, fontSize, current.toString(), maxWidth));
+		}
+		return lines;
+	}
+
+	private static String truncateIfNeeded(PDFont font, float fontSize, String text, float maxWidth) throws IOException {
+		String t = text == null ? "" : text;
+		if (textWidth(font, fontSize, t) <= maxWidth) return t;
+
+		String ellipsis = "...";
+		String s = t;
+		while (!s.isEmpty() && textWidth(font, fontSize, s + ellipsis) > maxWidth) {
+			s = s.substring(0, s.length() - 1);
+		}
+		return s.isEmpty() ? ellipsis : (s + ellipsis);
+	}
+
+	private static float textWidth(PDFont font, float fontSize, String text) throws IOException {
+		return (font.getStringWidth(text) / 1000f) * fontSize;
 	}
 
 	private static String safe(String s) {
