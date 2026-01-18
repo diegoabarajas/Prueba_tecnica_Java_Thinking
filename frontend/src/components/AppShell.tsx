@@ -31,17 +31,19 @@ export function AppShell() {
             Prueba Técnica
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 1, flex: 1 }}>
-            <Button component={NavLink} to="/empresas" color="inherit" sx={{ textTransform: "none" }} style={linkStyle as any}>
-              Empresas
-            </Button>
-            <Button component={NavLink} to="/productos" color="inherit" sx={{ textTransform: "none" }} style={linkStyle as any}>
-              Productos
-            </Button>
-            <Button component={NavLink} to="/inventario" color="inherit" sx={{ textTransform: "none" }} style={linkStyle as any}>
-              Inventario
-            </Button>
-          </Box>
+          {isAuthed && (
+            <Box sx={{ display: "flex", gap: 1, flex: 1 }}>
+              <Button component={NavLink} to="/empresas" color="inherit" sx={{ textTransform: "none" }} style={linkStyle as any}>
+                Empresas
+              </Button>
+              <Button component={NavLink} to="/productos" color="inherit" sx={{ textTransform: "none" }} style={linkStyle as any}>
+                Productos
+              </Button>
+              <Button component={NavLink} to="/inventario" color="inherit" sx={{ textTransform: "none" }} style={linkStyle as any}>
+                Inventario
+              </Button>
+            </Box>
+          )}
 
           {isAuthed ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
