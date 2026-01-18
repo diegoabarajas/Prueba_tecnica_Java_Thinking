@@ -1,4 +1,3 @@
-import React from "react";
 import {
   AppBar,
   Box,
@@ -9,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 const linkStyle = ({ isActive }: { isActive: boolean }) => ({
@@ -19,7 +18,7 @@ const linkStyle = ({ isActive }: { isActive: boolean }) => ({
   fontWeight: isActive ? 700 : 500,
 });
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell() {
   const { isAuthed, isAdmin, auth, logout } = useAuth();
 
   return (
@@ -59,7 +58,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Toolbar>
       </AppBar>
 
-      <Container sx={{ py: 3 }}>{children}</Container>
+      <Container sx={{ py: 3 }}>
+        <Outlet />
+      </Container>
     </Box>
   );
 }
