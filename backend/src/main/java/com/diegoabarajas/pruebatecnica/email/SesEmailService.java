@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ses.SesClient;
@@ -25,15 +29,20 @@ import java.util.UUID;
 @Service
 public class SesEmailService {
 
+	private static final Logger log = LoggerFactory.getLogger(SesEmailService.class);
+
 	private final String fromEmail;
 	private final Region region;
+	private final EnvironmentVariableCredentialsProvider credentialsProvider;
 
 	public SesEmailService(
 			@Value("${AWS_SES_FROM:}") String fromEmail,
 			@Value("${AWS_REGION:}") String awsRegion
 	) {
 		this.fromEmail = fromEmail;
-		this.region = awsRegion == null || awsRegion.isBlank() ? null : Region.of(awsRegion);
+		String reg = awsRegion == null ? "" : awsRegion.trim();
+		this.region = reg.isBlank() ? null : Region.of(reg);
+		this.credentialsProvider = EnvironmentVariableCredentialsProvider.create();
 	}
 
 	public void sendPdf(String toEmail, String subject, String message, String filename, byte[] pdfBytes) {
@@ -50,7 +59,23 @@ public class SesEmailService {
 		String boundary = "----=_Part_" + UUID.randomUUID();
 		String mime = buildMime(fromEmail, toEmail, subj, bodyText, filename, pdfBytes, boundary);
 
-		try (SesClient ses = SesClient.builder().region(region).build()) {
+		try {
+			AwsCredentials creds = credentialsProvider.resolveCredentials();
+			String akid = creds.accessKeyId() == null ? "" : creds.accessKeyId();
+			String akidTail = akid.length() <= 4 ? akid : akid.substring(akid.length() - 4);
+			log.info("SES sendPdf: region={}, fromEmail={}, accessKeyId(últimos4)={}", region, fromEmail, akidTail);
+		} catch (Exception e) {
+			throw new ResponseStatusException(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"No se pudieron leer credenciales desde variables de entorno (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY).",
+					e
+			);
+		}
+
+		try (SesClient ses = SesClient.builder()
+				.region(region)
+				.credentialsProvider(credentialsProvider)
+				.build()) {
 			SendRawEmailRequest req = SendRawEmailRequest.builder()
 					.rawMessage(RawMessage.builder().data(SdkBytes.fromByteArray(mime.getBytes(StandardCharsets.UTF_8))).build())
 					.build();
