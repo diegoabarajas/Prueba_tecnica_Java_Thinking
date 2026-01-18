@@ -32,7 +32,9 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const url = `${env.apiBaseUrl}${path}`;
   const headers = new Headers(opts.headers ?? {});
-  headers.set("Accept", headers.get("Accept") ?? "application/json");
+  // Si descargamos binarios (ej: PDF), no forzamos application/json porque Spring puede responder 406.
+  const defaultAccept = opts.expectBlob ? "*/*" : "application/json";
+  headers.set("Accept", headers.get("Accept") ?? defaultAccept);
 
   if (opts.body && !headers.get("Content-Type")) {
     headers.set("Content-Type", "application/json");
