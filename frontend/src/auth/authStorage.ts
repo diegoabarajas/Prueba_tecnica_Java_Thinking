@@ -4,7 +4,7 @@ const KEY = "auth_v1";
 
 export function loadAuth(): AuthState {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = sessionStorage.getItem(KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as AuthState;
     if (!parsed || typeof parsed !== "object") return {};
@@ -15,10 +15,10 @@ export function loadAuth(): AuthState {
 }
 
 export function saveAuth(auth: AuthState) {
-  localStorage.setItem(KEY, JSON.stringify(auth));
+  sessionStorage.setItem(KEY, JSON.stringify(auth));
 }
 
 export function clearAuth() {
-  localStorage.removeItem(KEY);
+  sessionStorage.removeItem(KEY);
 }
 

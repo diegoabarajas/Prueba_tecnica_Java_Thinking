@@ -101,10 +101,6 @@ export function LoginPage() {
                   {isSubmitting ? "Ingresando..." : "Ingresar"}
                 </Button>
               </Stack>
-
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Tip: credenciales dev (backend): admin@local.test / ChangeMe123!
-              </Typography>
             </Stack>
           </CardContent>
         </Card>
