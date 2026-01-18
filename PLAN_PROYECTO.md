@@ -21,7 +21,7 @@ Objetivo: construir las vistas/funcionalidades descritas en `ap_multi_vistas.md`
 ## Decisiones (modificables)
 
 - **Backend**: Spring Boot 3.x + Java 17 (o 21). Build: **Maven Wrapper** (no requiere Maven instalado globalmente).
-- **Auth**: Spring Security + JWT (simple) o sesión (más simple aún). Recomendación: **JWT**.
+- **Auth**: Spring Security + JWT (simple): usarlo asi con estos dos
 - **DB**: PostgreSQL (local con Docker) + Flyway para migraciones.
 - **Frontend**: React con Vite + TypeScript.
 - **AWS (básico)**:
@@ -59,15 +59,15 @@ Objetivo: construir las vistas/funcionalidades descritas en `ap_multi_vistas.md`
   - Puerto: `5432` (o el que tenga Laragon)
   - Usuario: (por confirmar, típico `postgres`)
   - Password: (por confirmar)
-- [ ] Crear base de datos: `prueba_tecnica`
-- [ ] (Recomendado) Crear usuario de app: `prueba_app` con password y permisos sobre `prueba_tecnica`
+- [ ] Crear base de datos: `prueba_tecnica_thinking`
+- [ ] (Recomendado) Crear usuario de app: `prueba_app` con password y permisos sobre `prueba_tecnica_thinking`
 - [ ] Verificar conexión con un cliente (pgAdmin / DBeaver / psql)
 
 #### Comandos útiles (si tienes `psql` disponible)
 
 ```sql
 -- Crear DB
-CREATE DATABASE prueba_tecnica;
+CREATE DATABASE prueba_tecnica_thinking;
 
 -- Crear usuario de la app
 CREATE USER prueba_app WITH PASSWORD 'cambia_esto';
@@ -92,7 +92,7 @@ GRANT ALL PRIVILEGES ON DATABASE prueba_tecnica TO prueba_app;
 - [ ] Verificar arranque: `./mvnw spring-boot:run`
 
 **Valores esperados (dev/local con Laragon, ajustables):**
-- JDBC: `jdbc:postgresql://localhost:5432/prueba_tecnica`
+- JDBC: `jdbc:postgresql://localhost:5432/prueba_tecnica_thinking`
 - User: `prueba_app`
 - Pass: `cambia_esto`
 
@@ -167,6 +167,7 @@ GRANT ALL PRIVILEGES ON DATABASE prueba_tecnica TO prueba_app;
 - [ ] Backend:
   - Opción A (más simple): Elastic Beanstalk (Java)
   - Opción B: ECS Fargate (Docker)
+  en esta parte primero la opcion a y luego la opcion b cuando ya este todo bien, solo sea ajustar ala opcion B
 - [ ] Frontend:
   - Build: `npm run build`
   - S3 (static hosting) + CloudFront (opcional)
@@ -184,11 +185,12 @@ GRANT ALL PRIVILEGES ON DATABASE prueba_tecnica TO prueba_app;
 
 ## Próximo paso (elige 1)
 
-1) Confirmamos los datos de conexión de Laragon (**host/puerto/usuario/password**) y creamos la DB/usuario.  
+1) Confirmamos los datos de conexión de Laragon (**host/puerto/usuario/password**) y creamos la DB/usuario. -> esto esta configurado: usuario estandard o ya deberias tenerlo
+ademas tengo dbeaver, dime paso apaso para gestionar la base de datos, cuando se requiera
 2) Creamos el esqueleto del repo (`backend/` + `frontend/`) y dejamos el backend conectando a PostgreSQL.
 
 Dime estos 3 datos de tu Laragon para dejarlo 100% exacto en el plan:
-- **Puerto** de PostgreSQL (¿5432?)
-- **Usuario** y **password** que estás usando (o si creamos `prueba_app`)
-- Si Laragon te expone `psql` en PATH (sí/no)
+- **Puerto** de PostgreSQL = 5432
+- **Usuario** y **password** que estás usando (o si creamos `prueba_app`) -> si creemos esto y ayudame a generarlo paso a paso
+- Si Laragon te expone `psql` en PATH (no)
 
