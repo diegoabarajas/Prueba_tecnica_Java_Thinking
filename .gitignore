@@ -1,0 +1,31 @@
+# === Java / Spring Boot ===
+target/
+*.class
+*.jar
+*.war
+*.ear
+.classpath
+.project
+.settings/
+.springBeans
+
+# === IntelliJ / Eclipse / VSCode ===
+.idea/
+*.iml
+.vscode/
+
+# === Logs ===
+*.log
+
+# === Node / React ===
+node_modules/
+dist/
+build/
+.npmrc
+.env
+.env.*
+
+# === OS ===
+Thumbs.db
+Desktop.ini
+
