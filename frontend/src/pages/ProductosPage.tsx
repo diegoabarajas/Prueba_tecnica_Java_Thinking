@@ -31,7 +31,11 @@ export function ProductosPage() {
     nombre: "",
     caracteristicas: "",
     empresaNit: "900123456",
+    precios: [],
   });
+
+  const [precioCop, setPrecioCop] = React.useState<string>("");
+  const [precioUsd, setPrecioUsd] = React.useState<string>("");
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -52,9 +56,17 @@ export function ProductosPage() {
   const onCreate = async () => {
     try {
       if (!isAdmin) return;
-      await productosApi.create(auth, { ...form, empresaNit });
+      const precios: { moneda: string; precio: number }[] = [];
+      const cop = Number(precioCop);
+      const usd = Number(precioUsd);
+      if (precioCop.trim() !== "" && Number.isFinite(cop) && cop > 0) precios.push({ moneda: "COP", precio: cop });
+      if (precioUsd.trim() !== "" && Number.isFinite(usd) && usd > 0) precios.push({ moneda: "USD", precio: usd });
+
+      await productosApi.create(auth, { ...form, empresaNit, precios });
       setFeedback({ open: true, severity: "success", message: "Producto creado" });
       setForm((s) => ({ ...s, codigo: "", nombre: "", caracteristicas: "" }));
+      setPrecioCop("");
+      setPrecioUsd("");
       await load();
     } catch (e) {
       setFeedback({ open: true, severity: "error", message: e instanceof Error ? e.message : "Error creando producto" });
@@ -113,6 +125,22 @@ export function ProductosPage() {
                 multiline
                 minRows={2}
               />
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <TextField
+                  label="Precio COP"
+                  value={precioCop}
+                  onChange={(e) => setPrecioCop(e.target.value)}
+                  inputMode="decimal"
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Precio USD"
+                  value={precioUsd}
+                  onChange={(e) => setPrecioUsd(e.target.value)}
+                  inputMode="decimal"
+                  sx={{ flex: 1 }}
+                />
+              </Stack>
               <Box>
                 <Button
                   startIcon={<AddIcon />}
@@ -145,6 +173,7 @@ export function ProductosPage() {
                     <TableCell>Código</TableCell>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Características</TableCell>
+                    <TableCell>Precios</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -153,6 +182,13 @@ export function ProductosPage() {
                       <TableCell sx={{ fontWeight: 700 }}>{p.codigo}</TableCell>
                       <TableCell>{p.nombre}</TableCell>
                       <TableCell>{p.caracteristicas ?? ""}</TableCell>
+                      <TableCell>
+                        {(p.precios ?? []).length === 0
+                          ? "-"
+                          : (p.precios ?? [])
+                              .map((x) => `${x.moneda} ${x.precio}`)
+                              .join(" · ")}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

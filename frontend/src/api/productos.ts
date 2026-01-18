@@ -5,6 +5,7 @@ export type Producto = {
   nombre: string;
   caracteristicas?: string | null;
   empresaNit: string;
+  precios?: { moneda: string; precio: number }[];
 };
 
 export type ProductoCreate = {
@@ -12,6 +13,7 @@ export type ProductoCreate = {
   nombre: string;
   caracteristicas?: string;
   empresaNit: string;
+  precios?: { moneda: string; precio: number }[];
 };
 
 export const productosApi = {
