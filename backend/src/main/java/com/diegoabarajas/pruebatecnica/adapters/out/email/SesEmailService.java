@@ -1,5 +1,6 @@
 package com.diegoabarajas.pruebatecnica.adapters.out.email;
 
+import com.diegoabarajas.pruebatecnica.core.ports.out.email.EmailSenderPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 /**
- * EnvÃ­o de correos vÃ­a AWS SES usando Raw Email (MIME) para adjuntar PDF.
+ * Envío de correos vía AWS SES usando Raw Email (MIME) para adjuntar PDF.
  *
  * Requiere variables de entorno:
  * - AWS_REGION
@@ -27,7 +28,7 @@ import java.util.UUID;
  * - AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (dev local) o roles (prod)
  */
 @Service
-public class SesEmailService {
+public class SesEmailService implements EmailSenderPort {
 
 	private static final Logger log = LoggerFactory.getLogger(SesEmailService.class);
 
@@ -45,6 +46,7 @@ public class SesEmailService {
 		this.credentialsProvider = EnvironmentVariableCredentialsProvider.create();
 	}
 
+	@Override
 	public void sendPdf(String toEmail, String subject, String message, String filename, byte[] pdfBytes) {
 		if (fromEmail == null || fromEmail.isBlank()) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falta configurar AWS_SES_FROM");
@@ -63,7 +65,7 @@ public class SesEmailService {
 			AwsCredentials creds = credentialsProvider.resolveCredentials();
 			String akid = creds.accessKeyId() == null ? "" : creds.accessKeyId();
 			String akidTail = akid.length() <= 4 ? akid : akid.substring(akid.length() - 4);
-			log.info("SES sendPdf: region={}, fromEmail={}, accessKeyId(Ãºltimos4)={}", region, fromEmail, akidTail);
+			log.info("SES sendPdf: region={}, fromEmail={}, accessKeyId(ultimos4)={}", region, fromEmail, akidTail);
 		} catch (Exception e) {
 			throw new ResponseStatusException(
 					HttpStatus.INTERNAL_SERVER_ERROR,
