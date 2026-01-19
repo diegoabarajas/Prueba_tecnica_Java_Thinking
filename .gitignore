@@ -35,3 +35,10 @@ intento aws.jpg
 # === Documentos no subir a Git ===
 ap_multi_vistas.md
 PLAN_PROYECTO.md
+
+# === Archivos con credenciales sensibles ===
+*credenciales*.txt
+*ejecuciones*.txt
+credenciales aws.txt
+credenciales pagina.txt
+ejecuciones.txt

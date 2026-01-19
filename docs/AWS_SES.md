@@ -39,6 +39,17 @@ En local, define variables de entorno:
    - Verifica también el **email destinatario** (TO), o
    - Solicita “**Production access**” para enviar a cualquier correo.
 
+## 3.1) Evitar que los correos lleguen a SPAM (recomendado)
+
+Si usas un email personal (Gmail/Outlook) como FROM, es común que caiga en spam.
+Para producción o demo “seria”, lo ideal es:
+
+- Verificar un **dominio** en SES (no solo un email).
+- Configurar **SPF** y **DKIM** en tu DNS (Route53 u otro).
+- Opcional: configurar **DMARC**.
+
+Con esto mejoras mucho la reputación/entregabilidad.
+
 ## 4) Configurar el backend
 
 Variables de entorno necesarias:
@@ -46,6 +57,15 @@ Variables de entorno necesarias:
 - `AWS_REGION` (ej: `us-east-1`)
 - `AWS_SES_FROM` (ej: `admin@tudominio.com` o email verificado en SES)
 - `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` (solo para dev local)
+
+### Ejemplo (Windows PowerShell)
+
+```powershell
+$env:AWS_REGION="us-east-1"
+$env:AWS_SES_FROM="tu_email_verificado@ejemplo.com"
+$env:AWS_ACCESS_KEY_ID="AKIA..."
+$env:AWS_SECRET_ACCESS_KEY="..."
+```
 
 ## 5) Probar el envío (API)
 
@@ -67,3 +87,7 @@ Body JSON:
 Respuesta esperada:
 - 200 OK (o 202 Accepted) si SES aceptó el envío.
 
+## Errores comunes
+
+- **`SignatureDoesNotMatch (403)`**: Access key/secret incorrectos o incompletos; revisar que las variables estén en la misma consola donde se ejecuta el backend.
+- **Sandbox**: si el destinatario no está verificado, SES rechaza el envío.
