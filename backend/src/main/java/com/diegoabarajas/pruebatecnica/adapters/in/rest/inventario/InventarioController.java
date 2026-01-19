@@ -38,8 +38,9 @@ public class InventarioController {
 
 		String filename = "inventario_" + empresaNit + ".pdf";
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"; filename*=UTF-8''" + java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8))
 				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE + "; charset=utf-8")
 				.body(pdfBytes);
 	}
 }

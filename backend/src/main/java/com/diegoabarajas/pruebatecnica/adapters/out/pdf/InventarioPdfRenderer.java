@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.stereotype.Component;
 
@@ -37,8 +38,18 @@ public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 			float tableTopPadding = 16f;
 			float rowPaddingY = 4f;
 
-			PDFont font = PDType1Font.HELVETICA;
-			PDFont fontBold = PDType1Font.HELVETICA_BOLD;
+			// Fuentes TrueType que soportan UTF-8 (caracteres especiales: á, é, í, ó, ú, ñ, etc.)
+			// Intentamos cargar Arial del sistema; si falla, usamos Helvetica como fallback
+			PDFont font;
+			PDFont fontBold;
+			try {
+				font = PDType0Font.load(doc, new java.io.File("C:/Windows/Fonts/arial.ttf"));
+				fontBold = PDType0Font.load(doc, new java.io.File("C:/Windows/Fonts/arialbd.ttf"));
+			} catch (Exception e) {
+				// Fallback a fuentes estándar si no se encuentra Arial (ej: Linux/Mac)
+				font = PDType1Font.HELVETICA;
+				fontBold = PDType1Font.HELVETICA_BOLD;
+			}
 			float fontSize = 10.5f;
 			float headerFontSize = 11f;
 
@@ -56,7 +67,7 @@ public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 			PDPageContentStream cs = new PDPageContentStream(doc, page);
 			float y = page.getMediaBox().getHeight() - margin;
 
-			// TÃ­tulo
+			// Título
 			cs.setFont(fontBold, 16);
 			writeText(cs, tableX, y, "Inventario - Empresa " + empresaNit);
 			y -= 18f;
@@ -64,7 +75,7 @@ public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 			writeText(cs, tableX, y, "Generado: " + generatedAt);
 			y -= (tableTopPadding);
 
-			// Header (lo repetimos en cada pÃ¡gina)
+			// Header (lo repetimos en cada página)
 			y = drawHeader(cs, y, tableX, tableWidth, colCode, colName, colFeatures, headerFontSize, fontBold, rowPaddingY);
 
 			boolean shade = false;
@@ -81,7 +92,7 @@ public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 				float lineHeight = fontSize + 2f;
 				float rowHeight = (maxLines * lineHeight) + (rowPaddingY * 2);
 
-				// Si no cabe, nueva pÃ¡gina
+				// Si no cabe, nueva página
 				if (y - rowHeight < margin) {
 					cs.close();
 					page = new PDPage(PDRectangle.LETTER);
@@ -89,7 +100,7 @@ public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 					cs = new PDPageContentStream(doc, page);
 					y = page.getMediaBox().getHeight() - margin;
 
-					// En pÃ¡ginas siguientes, tÃ­tulo mÃ¡s pequeÃ±o
+					// En páginas siguientes, título más pequeño
 					cs.setFont(fontBold, 13);
 					writeText(cs, tableX, y, "Inventario - Empresa " + empresaNit);
 					y -= 16f;
@@ -164,9 +175,9 @@ public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 		cs.setNonStrokingColor(Color.BLACK);
 		cs.setFont(fontBold, headerFontSize);
 		float textY = y - rowPaddingY - headerFontSize;
-		writeText(cs, tableX + 4, textY, "CÃ³digo");
+		writeText(cs, tableX + 4, textY, "Código");
 		writeText(cs, tableX + colCode + 4, textY, "Nombre");
-		writeText(cs, tableX + colCode + colName + 4, textY, "CaracterÃ­sticas");
+		writeText(cs, tableX + colCode + colName + 4, textY, "Características");
 
 		return y - headerHeight;
 	}

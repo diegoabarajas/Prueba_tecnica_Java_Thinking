@@ -34,7 +34,7 @@ export function ProductosPage() {
     precios: [],
   });
 
-  const [moneda, setMoneda] = React.useState<"COP" | "USD" | "UE">("COP");
+  const [moneda, setMoneda] = React.useState<"COP" | "USD" | "EU">("COP");
   const [precio, setPrecio] = React.useState<string>("");
 
   const load = React.useCallback(async () => {
@@ -58,7 +58,7 @@ export function ProductosPage() {
       if (!isAdmin) return;
       await productosApi.create(auth, { ...form, empresaNit });
       setFeedback({ open: true, severity: "success", message: "Producto creado" });
-      setForm((s) => ({ ...s, codigo: "", nombre: "", caracteristicas: "" }));
+      setForm((s) => ({ ...s, codigo: "", nombre: "", caracteristicas: "", precios: [] }));
       setMoneda("COP");
       setPrecio("");
       await load();
@@ -149,9 +149,9 @@ export function ProductosPage() {
                   onChange={(e) => setMoneda(e.target.value as any)}
                   sx={{ width: 180 }}
                 >
-                  <option value="COP">COP</option>
-                  <option value="USD">USD</option>
-                  <option value="UE">UE</option>
+                  <option value="COP" translate="no">COP</option>
+                  <option value="USD" translate="no">USD</option>
+                  <option value="EU" translate="no">EU</option>
                 </TextField>
                 <TextField
                   label="Precio"

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 
 public record ProductoPrecioRequest(
 		@NotBlank
-		@Pattern(regexp = "(?i)(COP|USD|UE)", message = "moneda debe ser una de: COP, USD, UE")
+		@Pattern(regexp = "(?i)(COP|USD|EU)", message = "moneda debe ser una de: COP, USD, EU")
 		String moneda,
 		@NotNull
 		Double precio

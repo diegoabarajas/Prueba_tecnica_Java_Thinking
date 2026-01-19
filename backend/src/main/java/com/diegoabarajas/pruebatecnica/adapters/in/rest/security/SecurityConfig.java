@@ -56,6 +56,14 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole("ADMIN")
 				// Asignación de categorías a producto: ADMIN.
 				.requestMatchers(HttpMethod.PUT, "/api/productos/*/categorias").hasRole("ADMIN")
+				// Clientes: lectura pública; mutaciones ADMIN.
+				.requestMatchers(HttpMethod.GET, "/api/clientes/**").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/clientes/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.PUT, "/api/clientes/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasRole("ADMIN")
+				// Órdenes: lectura pública; creación ADMIN.
+				.requestMatchers(HttpMethod.GET, "/api/ordenes/**").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/ordenes/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.GET, "/api/empresas/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/inventario/**").permitAll()

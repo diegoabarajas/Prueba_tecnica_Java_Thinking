@@ -70,7 +70,7 @@ export function LoginPage() {
           Iniciar sesión
         </Typography>
         <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
-          Usa tus credenciales para acceder. Admin habilita acciones de creación/edición/eliminación.
+          Bienvenido, ingresa tus credenciales.
         </Typography>
 
         <Card>

@@ -34,8 +34,8 @@ class InventarioControllerPdfTest {
 
 		mvc.perform(get("/api/inventario/pdf").param("empresaNit", "900"))
 				.andExpect(status().isOk())
-				.andExpect(header().string("Content-Disposition", "attachment; filename=\"inventario_900.pdf\""))
-				.andExpect(content().contentType("application/pdf"));
+				.andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment; filename=\"inventario_900.pdf\"")))
+				.andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("application/pdf")));
 	}
 }
 
