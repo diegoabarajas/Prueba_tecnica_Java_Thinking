@@ -1,5 +1,6 @@
 package com.diegoabarajas.pruebatecnica.adapters.in.rest.empresa;
 
+import com.diegoabarajas.pruebatecnica.core.application.empresa.CompanyUpsert;
 import com.diegoabarajas.pruebatecnica.core.application.empresa.EmpresaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,23 +20,25 @@ public class EmpresaController {
 
 	@GetMapping
 	public List<EmpresaResponse> list() {
-		return empresaService.list();
+		return empresaService.list().stream().map(EmpresaResponse::fromCore).toList();
 	}
 
 	@GetMapping("/{nit}")
 	public EmpresaResponse get(@PathVariable String nit) {
-		return empresaService.get(nit);
+		return EmpresaResponse.fromCore(empresaService.get(nit));
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public EmpresaResponse create(@Valid @RequestBody EmpresaRequest req) {
-		return empresaService.create(req);
+		CompanyUpsert cmd = new CompanyUpsert(req.nit(), req.nombre(), req.direccion(), req.telefono());
+		return EmpresaResponse.fromCore(empresaService.create(cmd));
 	}
 
 	@PutMapping("/{nit}")
 	public EmpresaResponse update(@PathVariable String nit, @Valid @RequestBody EmpresaRequest req) {
-		return empresaService.update(nit, req);
+		CompanyUpsert cmd = new CompanyUpsert(req.nit(), req.nombre(), req.direccion(), req.telefono());
+		return EmpresaResponse.fromCore(empresaService.update(nit, cmd));
 	}
 
 	@DeleteMapping("/{nit}")

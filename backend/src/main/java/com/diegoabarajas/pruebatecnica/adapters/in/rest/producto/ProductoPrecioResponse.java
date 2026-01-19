@@ -1,13 +1,13 @@
 package com.diegoabarajas.pruebatecnica.adapters.in.rest.producto;
 
-import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.ProductoPrecio;
+import com.diegoabarajas.pruebatecnica.core.application.producto.ProductPrice;
 
 public record ProductoPrecioResponse(
 		String moneda,
 		Double precio
 ) {
-	public static ProductoPrecioResponse fromEntity(ProductoPrecio p) {
-		return new ProductoPrecioResponse(p.getMoneda(), p.getPrecio());
+	public static ProductoPrecioResponse fromCore(ProductPrice p) {
+		return new ProductoPrecioResponse(p.moneda(), p.precio());
 	}
 }
 
