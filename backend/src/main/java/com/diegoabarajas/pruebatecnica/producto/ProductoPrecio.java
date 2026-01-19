@@ -2,8 +2,6 @@ package com.diegoabarajas.pruebatecnica.producto;
 
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
-
 @Entity
 @Table(
 		name = "producto_precios",
@@ -22,8 +20,8 @@ public class ProductoPrecio {
 	@Column(name = "moneda", nullable = false, length = 3)
 	private String moneda;
 
-	@Column(name = "precio", nullable = false, precision = 18, scale = 2)
-	private BigDecimal precio;
+	@Column(name = "precio", nullable = false)
+	private Double precio;
 
 	public Long getId() {
 		return id;
@@ -45,11 +43,11 @@ public class ProductoPrecio {
 		this.moneda = moneda;
 	}
 
-	public BigDecimal getPrecio() {
+	public Double getPrecio() {
 		return precio;
 	}
 
-	public void setPrecio(BigDecimal precio) {
+	public void setPrecio(Double precio) {
 		this.precio = precio;
 	}
 }

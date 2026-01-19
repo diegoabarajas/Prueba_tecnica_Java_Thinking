@@ -150,7 +150,7 @@ export function EmpresasPage() {
             <Table size="small" aria-label="Tabla de empresas">
               <TableHead>
                 <TableRow>
-                  <TableCell>NIT</TableCell>
+                  <TableCell>NIT_empresa</TableCell>
                   <TableCell>Nombre</TableCell>
                   <TableCell>Dirección</TableCell>
                   <TableCell>Teléfono</TableCell>

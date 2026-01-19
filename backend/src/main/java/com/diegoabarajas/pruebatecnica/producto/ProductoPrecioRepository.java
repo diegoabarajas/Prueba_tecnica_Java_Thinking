@@ -6,6 +6,6 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ProductoPrecioRepository extends JpaRepository<ProductoPrecio, Long> {
-	List<ProductoPrecio> findByProducto_CodigoIn(Collection<String> codigos);
+	List<ProductoPrecio> findByProducto_CodigoInOrderByIdAsc(Collection<String> codigos);
 }
 

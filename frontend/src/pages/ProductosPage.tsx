@@ -34,8 +34,8 @@ export function ProductosPage() {
     precios: [],
   });
 
-  const [precioCop, setPrecioCop] = React.useState<string>("");
-  const [precioUsd, setPrecioUsd] = React.useState<string>("");
+  const [moneda, setMoneda] = React.useState<"COP" | "USD" | "UE">("COP");
+  const [precio, setPrecio] = React.useState<string>("");
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -56,21 +56,36 @@ export function ProductosPage() {
   const onCreate = async () => {
     try {
       if (!isAdmin) return;
-      const precios: { moneda: string; precio: number }[] = [];
-      const cop = Number(precioCop);
-      const usd = Number(precioUsd);
-      if (precioCop.trim() !== "" && Number.isFinite(cop) && cop > 0) precios.push({ moneda: "COP", precio: cop });
-      if (precioUsd.trim() !== "" && Number.isFinite(usd) && usd > 0) precios.push({ moneda: "USD", precio: usd });
-
-      await productosApi.create(auth, { ...form, empresaNit, precios });
+      await productosApi.create(auth, { ...form, empresaNit });
       setFeedback({ open: true, severity: "success", message: "Producto creado" });
       setForm((s) => ({ ...s, codigo: "", nombre: "", caracteristicas: "" }));
-      setPrecioCop("");
-      setPrecioUsd("");
+      setMoneda("COP");
+      setPrecio("");
       await load();
     } catch (e) {
       setFeedback({ open: true, severity: "error", message: e instanceof Error ? e.message : "Error creando producto" });
     }
+  };
+
+  const onAddPrecio = () => {
+    if (!isAdmin) return;
+    const v = Number(precio);
+    if (!precio.trim() || !Number.isFinite(v) || v <= 0) {
+      setFeedback({ open: true, severity: "error", message: "Precio inválido" });
+      return;
+    }
+    setForm((s) => {
+      const prev = s.precios ?? [];
+      // Si ya existe esa moneda, la reemplazamos manteniendo el orden original
+      const idx = prev.findIndex((p) => p.moneda === moneda);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { moneda, precio: v };
+        return { ...s, precios: next };
+      }
+      return { ...s, precios: [...prev, { moneda, precio: v }] };
+    });
+    setPrecio("");
   };
 
   return (
@@ -127,20 +142,36 @@ export function ProductosPage() {
               />
               <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                 <TextField
-                  label="Precio COP"
-                  value={precioCop}
-                  onChange={(e) => setPrecioCop(e.target.value)}
-                  inputMode="decimal"
-                  sx={{ flex: 1 }}
-                />
+                  label="Moneda"
+                  select
+                  SelectProps={{ native: true }}
+                  value={moneda}
+                  onChange={(e) => setMoneda(e.target.value as any)}
+                  sx={{ width: 180 }}
+                >
+                  <option value="COP">COP</option>
+                  <option value="USD">USD</option>
+                  <option value="UE">UE</option>
+                </TextField>
                 <TextField
-                  label="Precio USD"
-                  value={precioUsd}
-                  onChange={(e) => setPrecioUsd(e.target.value)}
+                  label="Precio"
+                  value={precio}
+                  onChange={(e) => setPrecio(e.target.value)}
                   inputMode="decimal"
-                  sx={{ flex: 1 }}
+                  sx={{ flex: 1, minWidth: 200 }}
                 />
+                <Button variant="outlined" onClick={onAddPrecio} startIcon={<AddIcon />}>
+                  Agregar
+                </Button>
               </Stack>
+              <TextField
+                label="Precios agregados"
+                value={(form.precios ?? []).map((p) => `${p.moneda} ${p.precio}`).join("\n")}
+                multiline
+                minRows={3}
+                InputProps={{ readOnly: true }}
+                helperText="Formato: COP 1000 (una línea por moneda)"
+              />
               <Box>
                 <Button
                   startIcon={<AddIcon />}
@@ -183,11 +214,17 @@ export function ProductosPage() {
                       <TableCell>{p.nombre}</TableCell>
                       <TableCell>{p.caracteristicas ?? ""}</TableCell>
                       <TableCell>
-                        {(p.precios ?? []).length === 0
-                          ? "-"
-                          : (p.precios ?? [])
-                              .map((x) => `${x.moneda} ${x.precio}`)
-                              .join(" · ")}
+                        {(p.precios ?? []).length === 0 ? (
+                          "-"
+                        ) : (
+                          <Stack spacing={0.25}>
+                            {(p.precios ?? []).map((x) => (
+                              <Typography key={x.moneda} variant="body2">
+                                {x.moneda} {x.precio}
+                              </Typography>
+                            ))}
+                          </Stack>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

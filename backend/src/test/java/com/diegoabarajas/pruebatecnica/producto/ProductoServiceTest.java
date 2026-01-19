@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,7 +69,7 @@ class ProductoServiceTest {
 				"X",
 				"C",
 				"900",
-				List.of(new ProductoPrecioRequest("cop", new BigDecimal("10.50")))
+				List.of(new ProductoPrecioRequest("cop", 10.5))
 		));
 
 		assertEquals("P1", res.codigo());

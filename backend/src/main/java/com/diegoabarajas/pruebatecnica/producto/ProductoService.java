@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductoService {
+
+	private static final Set<String> MONEDAS_PERMITIDAS = Set.of("COP", "USD", "UE");
 
 	private final ProductoRepository productoRepository;
 	private final EmpresaRepository empresaRepository;
@@ -40,7 +43,7 @@ public class ProductoService {
 		if (productos.isEmpty()) return List.of();
 
 		List<String> codigos = productos.stream().map(Producto::getCodigo).toList();
-		Map<String, List<ProductoPrecioResponse>> preciosByCodigo = productoPrecioRepository.findByProducto_CodigoIn(codigos).stream()
+		Map<String, List<ProductoPrecioResponse>> preciosByCodigo = productoPrecioRepository.findByProducto_CodigoInOrderByIdAsc(codigos).stream()
 				.collect(Collectors.groupingBy(p -> p.getProducto().getCodigo(),
 						Collectors.mapping(ProductoPrecioResponse::fromEntity, Collectors.toList())));
 
@@ -75,6 +78,12 @@ public class ProductoService {
 		for (ProductoPrecioRequest pr : preciosReq) {
 			String moneda = pr.moneda() == null ? "" : pr.moneda().trim().toUpperCase(Locale.ROOT);
 			if (moneda.isBlank()) continue;
+			if (!MONEDAS_PERMITIDAS.contains(moneda)) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Moneda no permitida: " + moneda);
+			}
+			if (pr.precio() == null || !(pr.precio() > 0)) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Precio inválido para " + moneda);
+			}
 			if (unique.containsKey(moneda)) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Moneda duplicada: " + moneda);
 			}
