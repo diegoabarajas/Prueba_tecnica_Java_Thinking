@@ -1,10 +1,9 @@
 package com.diegoabarajas.pruebatecnica.core.application.inventario;
 
-import com.diegoabarajas.pruebatecnica.adapters.in.rest.inventario.InventarioItemResponse;
 import com.diegoabarajas.pruebatecnica.adapters.out.persistence.empresa.EmpresaRepository;
 import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.Producto;
 import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.ProductoRepository;
-import com.diegoabarajas.pruebatecnica.adapters.out.pdf.InventarioPdfRenderer;
+import com.diegoabarajas.pruebatecnica.core.ports.out.pdf.InventarioPdfRendererPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +17,12 @@ public class InventarioService {
 
 	private final ProductoRepository productoRepository;
 	private final EmpresaRepository empresaRepository;
-	private final InventarioPdfRenderer pdfRenderer;
+	private final InventarioPdfRendererPort pdfRenderer;
 
 	public InventarioService(
 			ProductoRepository productoRepository,
 			EmpresaRepository empresaRepository,
-			InventarioPdfRenderer pdfRenderer
+			InventarioPdfRendererPort pdfRenderer
 	) {
 		this.productoRepository = productoRepository;
 		this.empresaRepository = empresaRepository;
@@ -35,7 +34,7 @@ public class InventarioService {
 	 * Más adelante podemos extenderlo a una tabla inventario con cantidades, etc.
 	 */
 	@Transactional(readOnly = true)
-	public List<InventarioItemResponse> list(String empresaNit) {
+	public List<InventoryItem> list(String empresaNit) {
 		if (empresaNit == null || empresaNit.isBlank()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "empresaNit es requerido");
 		}
@@ -44,7 +43,7 @@ public class InventarioService {
 		}
 		List<Producto> productos = productoRepository.findByEmpresa_Nit(empresaNit);
 		return productos.stream()
-				.map(p -> new InventarioItemResponse(
+				.map(p -> new InventoryItem(
 						empresaNit,
 						p.getCodigo(),
 						p.getNombre(),
@@ -55,7 +54,7 @@ public class InventarioService {
 
 	@Transactional(readOnly = true)
 	public byte[] buildPdf(String empresaNit) {
-		List<InventarioItemResponse> items = list(empresaNit);
+		List<InventoryItem> items = list(empresaNit);
 		try {
 			return pdfRenderer.render(empresaNit, items);
 		} catch (IOException e) {

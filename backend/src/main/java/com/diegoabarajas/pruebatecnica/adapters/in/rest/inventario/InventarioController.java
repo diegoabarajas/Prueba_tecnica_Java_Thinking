@@ -23,11 +23,13 @@ public class InventarioController {
 
 	/**
 	 * Inventario inicial: productos por empresa.
-	 * MÃ¡s adelante podemos extenderlo a una tabla inventario con cantidades, etc.
+	 * Más adelante podemos extenderlo a una tabla inventario con cantidades, etc.
 	 */
 	@GetMapping
 	public List<InventarioItemResponse> list(@RequestParam String empresaNit) {
-		return inventarioService.list(empresaNit);
+		return inventarioService.list(empresaNit).stream()
+				.map(InventarioItemResponse::fromCore)
+				.toList();
 	}
 
 	@GetMapping(value = "/pdf", produces = MediaType.APPLICATION_PDF_VALUE)

@@ -1,6 +1,7 @@
 package com.diegoabarajas.pruebatecnica.adapters.out.pdf;
 
-import com.diegoabarajas.pruebatecnica.adapters.in.rest.inventario.InventarioItemResponse;
+import com.diegoabarajas.pruebatecnica.core.application.inventario.InventoryItem;
+import com.diegoabarajas.pruebatecnica.core.ports.out.pdf.InventarioPdfRendererPort;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -24,9 +25,10 @@ import java.util.List;
  * para mantener SRP (SOLID) y facilitar pruebas unitarias.
  */
 @Component
-public class InventarioPdfRenderer {
+public class InventarioPdfRenderer implements InventarioPdfRendererPort {
 
-	public byte[] render(String empresaNit, List<InventarioItemResponse> items) throws IOException {
+	@Override
+	public byte[] render(String empresaNit, List<InventoryItem> items) throws IOException {
 		try (PDDocument doc = new PDDocument(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PDPage page = new PDPage(PDRectangle.LETTER);
 			doc.addPage(page);
@@ -40,7 +42,7 @@ public class InventarioPdfRenderer {
 			float fontSize = 10.5f;
 			float headerFontSize = 11f;
 
-			// Tabla con 3 columnas (cÃ³digo / nombre / caracterÃ­sticas)
+			// Tabla con 3 columnas (código / nombre / características)
 			float pageWidth = page.getMediaBox().getWidth();
 			float tableX = margin;
 			float tableWidth = pageWidth - (margin * 2);
@@ -66,7 +68,7 @@ public class InventarioPdfRenderer {
 			y = drawHeader(cs, y, tableX, tableWidth, colCode, colName, colFeatures, headerFontSize, fontBold, rowPaddingY);
 
 			boolean shade = false;
-			for (InventarioItemResponse it : items) {
+			for (InventoryItem it : items) {
 				String code = safe(it.productoCodigo());
 				String name = safe(it.productoNombre());
 				String features = safe(it.caracteristicas());
