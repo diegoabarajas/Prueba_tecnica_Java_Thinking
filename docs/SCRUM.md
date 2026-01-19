@@ -13,19 +13,23 @@ Entregar una app desplegada en AWS que cumpla:
 ## Backlog (alto nivel)
 
 ### Épica: Autenticación y roles
+
 - Login (Admin/Externo)
 - Autorización por endpoints (Admin vs público)
 
 ### Épica: Empresas
+
 - CRUD + validaciones
 - UI (React)
 
 ### Épica: Productos / Inventario
+
 - Productos por empresa (API + UI)
 - Inventario (API + UI)
 - PDF de inventario
 
 ### Épica: AWS
+
 - Backend desplegado
 - Frontend desplegado
 - BD (RDS)
@@ -38,4 +42,9 @@ Entregar una app desplegada en AWS que cumpla:
 - Endpoints protegidos según rol
 - Sin errores de compilación
 - Documentación mínima (README + decisiones)
+
+## Estado actual (resumen)
+
+- **Hecho**: Empresas (UI + API), Productos (UI + API + precios multi-moneda), Inventario (UI + API + PDF + Email), Seguridad (Basic + roles), tablas del punto f) implementadas en backend (categorías / clientes / órdenes), logging con correlationId y errores consistentes.
+- **Pendiente**: despliegue en AWS (backend + frontend + RDS + SES) y consolidación final de entregables (README final + enlaces).
 

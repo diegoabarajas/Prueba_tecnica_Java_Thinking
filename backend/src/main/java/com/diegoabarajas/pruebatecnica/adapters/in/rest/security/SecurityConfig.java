@@ -22,16 +22,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 /**
- * ConfiguraciÃ³n de seguridad para la API.
+ * Configuración de seguridad para la API.
  *
- * <p>Objetivo del diseÃ±o:
- * - Mantener una autenticaciÃ³n simple para una prueba tÃ©cnica (HTTP Basic).
+ * <p>Objetivo del diseño:
+ * - Mantener una autenticación simple para una prueba técnica (HTTP Basic).
  * - Controlar permisos por rol (ADMIN/EXTERNO) mediante reglas por endpoint.
  * - Permitir que el frontend (Vite en localhost) consuma la API (CORS).
  *
  * <p>Notas:
- * - Se deshabilita CSRF porque esta es una API consumida por frontend separado (no usa cookies de sesiÃ³n).
- * - Para un entorno productivo tÃ­pico, se podrÃ­a migrar a JWT u OAuth2, pero se evitÃ³ complejidad innecesaria aquÃ­.
+ * - Se deshabilita CSRF porque esta es una API consumida por frontend separado (no usa cookies de sesión).
+ * - Para un entorno productivo típico, se podría migrar a JWT u OAuth2, pero se evitó complejidad innecesaria aquí.
  */
 @Configuration
 @EnableMethodSecurity
@@ -40,7 +40,7 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		// API simple: HTTP Basic.
-		// Regla general: lectura pÃºblica, mutaciones restringidas a ADMIN.
+		// Regla general: lectura pública, mutaciones restringidas a ADMIN.
 		http.csrf(csrf -> csrf.disable());
 		http.cors(Customizer.withDefaults());
 
@@ -81,14 +81,14 @@ public class SecurityConfig {
 
 	@Bean
 	PasswordEncoder passwordEncoder() {
-		// BCrypt es un estÃ¡ndar seguro para hashing de contraseÃ±as (no reversible).
+		// BCrypt es un estándar seguro para hashing de contraseñas (no reversible).
 		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
 	UserDetailsService userDetailsService(UsuarioRepository usuarioRepository) {
 		// Adaptador: convierte nuestro Usuario (tabla usuarios) a UserDetails para Spring Security.
-		// Importante: el rol se expone como "ROLE_ADMIN" o "ROLE_EXTERNO" (convenciÃ³n Spring).
+		// Importante: el rol se expone como "ROLE_ADMIN" o "ROLE_EXTERNO" (convención Spring).
 		return username -> {
 			Usuario u = usuarioRepository.findByEmailIgnoreCase(username)
 					.orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
@@ -99,7 +99,7 @@ public class SecurityConfig {
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 		// CORS habilita que el navegador permita llamadas cross-origin del frontend al backend.
-		// Sin esto, el navegador bloquea requests aunque el backend responda (problema tÃ­pico "Failed to fetch").
+		// Sin esto, el navegador bloquea requests aunque el backend responda (problema típico "Failed to fetch").
 		CorsConfiguration cfg = new CorsConfiguration();
 		// Frontend Vite
 		cfg.setAllowedOrigins(List.of("http://localhost:5173"));

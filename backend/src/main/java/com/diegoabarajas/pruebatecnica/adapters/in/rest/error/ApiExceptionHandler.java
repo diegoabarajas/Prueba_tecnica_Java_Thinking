@@ -22,12 +22,12 @@ import java.util.Map;
 /**
  * Centraliza el manejo de errores para que la API responda de forma consistente.
  *
- * <p>MotivaciÃ³n:
+ * <p>Motivación:
  * - Evitar que cada Controller repita try/catch o formatee errores manualmente.
  * - Mantener un contrato de error estable para el frontend (mismo shape de respuesta).
  *
- * <p>ConvenciÃ³n del proyecto:
- * - Errores de validaciÃ³n (Bean Validation) -> 400 con fieldErrors
+ * <p>Convención del proyecto:
+ * - Errores de validación (Bean Validation) -> 400 con fieldErrors
  * - Errores controlados de negocio -> ResponseStatusException (404/409/400/etc.)
  * - Errores de parsing o media types -> 400/406
  * - Cualquier error no esperado -> 500 sin filtrar detalles sensibles al cliente
@@ -41,7 +41,7 @@ public class ApiExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
 		Map<String, String> fieldErrors = new HashMap<>();
 		for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
-			// si hay mÃºltiples errores por campo, nos quedamos con el primero
+			// si hay múltiples errores por campo, nos quedamos con el primero
 			fieldErrors.putIfAbsent(fe.getField(), fe.getDefaultMessage());
 		}
 		ApiErrorResponse body = new ApiErrorResponse(
@@ -50,7 +50,7 @@ public class ApiExceptionHandler {
 				HttpStatus.BAD_REQUEST.value(),
 				"VALIDATION_ERROR",
 				HttpStatus.BAD_REQUEST.getReasonPhrase(),
-				"ValidaciÃ³n fallida",
+				"Validación fallida",
 				req.getRequestURI(),
 				fieldErrors
 		);
@@ -81,8 +81,8 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler({HttpMessageNotReadableException.class, HttpMediaTypeNotSupportedException.class})
 	public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception ex, HttpServletRequest req) {
-		// Casos tÃ­picos:
-		// - JSON invÃ¡lido (comas, llaves, tipos, etc.)
+		// Casos típicos:
+		// - JSON inválido (comas, llaves, tipos, etc.)
 		// - Content-Type no soportado por el endpoint
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
@@ -90,7 +90,7 @@ public class ApiExceptionHandler {
 				HttpStatus.BAD_REQUEST.value(),
 				"BAD_REQUEST",
 				HttpStatus.BAD_REQUEST.getReasonPhrase(),
-				"Solicitud invÃ¡lida",
+				"Solicitud inválida",
 				req.getRequestURI(),
 				null
 		);
@@ -99,7 +99,7 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
 	public ResponseEntity<ApiErrorResponse> handleNotAcceptable(HttpMediaTypeNotAcceptableException ex, HttpServletRequest req) {
-		// Caso tÃ­pico en frontend: el cliente envÃ­a un header Accept incompatible con el produces del endpoint.
+		// Caso típico en frontend: el cliente envía un header Accept incompatible con el produces del endpoint.
 		// Ejemplo: pedir PDF con "Accept: application/json" provoca 406.
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
@@ -117,8 +117,8 @@ public class ApiExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception ex, HttpServletRequest req) {
 		// Importante:
-		// - No retornamos el stacktrace al cliente (evita exponer informaciÃ³n sensible).
-		// - El stacktrace queda en logs del servidor para depuraciÃ³n.
+		// - No retornamos el stacktrace al cliente (evita exponer información sensible).
+		// - El stacktrace queda en logs del servidor para depuración.
 		log.error("Unhandled error: path={}", req.getRequestURI(), ex);
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),

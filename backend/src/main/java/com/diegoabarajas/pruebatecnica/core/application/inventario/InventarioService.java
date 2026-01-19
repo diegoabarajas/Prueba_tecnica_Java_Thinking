@@ -1,8 +1,8 @@
 package com.diegoabarajas.pruebatecnica.core.application.inventario;
 
-import com.diegoabarajas.pruebatecnica.adapters.out.persistence.empresa.EmpresaRepository;
-import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.Producto;
-import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.ProductoRepository;
+import com.diegoabarajas.pruebatecnica.core.application.producto.Product;
+import com.diegoabarajas.pruebatecnica.core.ports.out.persistence.CompanyRepositoryPort;
+import com.diegoabarajas.pruebatecnica.core.ports.out.persistence.ProductRepositoryPort;
 import com.diegoabarajas.pruebatecnica.core.ports.out.pdf.InventarioPdfRendererPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,17 +15,17 @@ import java.util.List;
 @Service
 public class InventarioService {
 
-	private final ProductoRepository productoRepository;
-	private final EmpresaRepository empresaRepository;
+	private final ProductRepositoryPort productRepository;
+	private final CompanyRepositoryPort companyRepository;
 	private final InventarioPdfRendererPort pdfRenderer;
 
 	public InventarioService(
-			ProductoRepository productoRepository,
-			EmpresaRepository empresaRepository,
+			ProductRepositoryPort productRepository,
+			CompanyRepositoryPort companyRepository,
 			InventarioPdfRendererPort pdfRenderer
 	) {
-		this.productoRepository = productoRepository;
-		this.empresaRepository = empresaRepository;
+		this.productRepository = productRepository;
+		this.companyRepository = companyRepository;
 		this.pdfRenderer = pdfRenderer;
 	}
 
@@ -38,16 +38,16 @@ public class InventarioService {
 		if (empresaNit == null || empresaNit.isBlank()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "empresaNit es requerido");
 		}
-		if (!empresaRepository.existsById(empresaNit)) {
+		if (!companyRepository.existsByNit(empresaNit)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa no existe: " + empresaNit);
 		}
-		List<Producto> productos = productoRepository.findByEmpresa_Nit(empresaNit);
+		List<Product> productos = productRepository.findByEmpresaNit(empresaNit);
 		return productos.stream()
 				.map(p -> new InventoryItem(
 						empresaNit,
-						p.getCodigo(),
-						p.getNombre(),
-						p.getCaracteristicas()
+						p.codigo(),
+						p.nombre(),
+						p.caracteristicas()
 				))
 				.toList();
 	}

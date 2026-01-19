@@ -2,42 +2,86 @@
 
 ## Objetivo
 
-Mantener un backend entendible y extensible, con responsabilidades claras por capa.
+Mantener el backend con **responsabilidades claras** y con un diseño que permita:
 
-## Backend (Spring Boot)
+- Evolucionar el dominio sin acoplarlo a frameworks (Spring, JPA, AWS SDK, PDFBox).
+- Sustituir infraestructura (DB/Email/PDF) sin tocar reglas de negocio.
+- Probar casos de uso con unit tests (mock de puertos) y smoke tests de endpoints.
 
-Paquetes principales:
+## Estilo: Hexagonal (Ports & Adapters)
 
-- `config/`: configuración (seguridad, etc.)
-- `common/`: manejo de errores y utilidades transversales
-- `empresa/`, `producto/`, `inventario/`: módulos por dominio
+El backend sigue un enfoque **Hexagonal** (Ports & Adapters):
 
-Estructura por capas (por módulo):
+- **Core**: modelos + casos de uso + puertos (interfaces).
+- **Adapters**:
+  - **Inbound**: REST (controladores/DTOs).
+  - **Outbound**: persistencia (JPA) y servicios externos (PDF, Email).
 
-- **Controller**: HTTP (request/response). Validación de entrada con `@Valid`.
-- **Service**: reglas de negocio, transacciones (`@Transactional`), orquestación.
-- **Repository**: acceso a datos (JPA).
-- **DTOs**: requests/responses para no exponer entidades JPA directamente.
+Estructura (alto nivel):
 
-### Separación de responsabilidades (SRP)
+```
+backend/src/main/java/com/diegoabarajas/pruebatecnica
+  core/
+    application/        # casos de uso + modelos del core
+    ports/out/          # interfaces (puertos) hacia infraestructura
+  adapters/
+    in/rest/            # controllers + DTOs + seguridad + manejo de error
+    out/persistence/    # entidades JPA + repos + adapters que implementan puertos
+    out/pdf/            # adapter PDF (PDFBox)
+    out/email/          # adapter Email (AWS SES)
+```
 
-- **PDF**: la generación del PDF de inventario está separada en `inventario/InventarioPdfRenderer`, para que `InventarioService` se enfoque en reglas de negocio y orquestación.
-- **Email**: el envío por SES está encapsulado en `email/SesEmailService`.
+## Capas y responsabilidades
 
-## Seguridad (dev)
+### Core
 
-Actualmente: **HTTP Basic** + roles `ADMIN` / `EXTERNO`.
-Esto permite validar rápidamente permisos para el CRUD.
+- **Modelos del core** (records/classes): representan el “lenguaje” del negocio (Company, Product, Order, etc.).
+- **Casos de uso** (`core/application/*Service`): orquestan validaciones y llamadas a puertos.
+- **Puertos** (`core/ports/out/*`): contratos que el core necesita (persistir, generar PDF, enviar email).
 
-Más adelante, si el frontend requiere una experiencia de login mejor, se migra a **JWT** (sin cambiar el dominio).
+> Regla: el core **no importa** Spring MVC, JPA, ni AWS SDK.
 
-## Base de datos
+### Adapters inbound (REST)
 
-- PostgreSQL
-- Migraciones: Flyway (`backend/src/main/resources/db/migration`)
+Ubicación: `adapters/in/rest/*`
 
-## Tests
+- **Controllers**: exponen endpoints, validan entrada con Bean Validation y mapean a comandos del core.
+- **DTOs**: requests/responses estables (evitan exponer entidades JPA).
+- **Seguridad**: configuración de Spring Security y CORS.
+- **Errores**: respuesta consistente (`ApiExceptionHandler` / `ApiErrorResponse`).
+- **Observabilidad**: `CorrelationIdFilter` para trazabilidad (header y logs).
 
-- Unit tests con Mockito para servicios.
-- Tests MVC (`@WebMvcTest`) para reglas de seguridad y endpoints clave.
-- `@SpringBootTest` usa perfil `test` con **H2 en memoria** (evita depender de PostgreSQL local para correr la suite).
+### Adapters outbound (infraestructura)
+
+Ubicación: `adapters/out/*`
+
+- **Persistencia (JPA)**: entidades y repositorios Spring Data.
+  - Los *RepositoryAdapter* traducen entre entidades JPA y modelos core e implementan puertos.
+- **PDF**: `InventarioPdfRenderer` implementa el puerto `InventarioPdfRendererPort`.
+- **Email**: `SesEmailService` implementa `EmailSenderPort`.
+
+## Seguridad (dev/local)
+
+- Autenticación: **HTTP Basic**.
+- Roles: `ADMIN` y `EXTERNO`.
+- Convención Spring: se expone como `ROLE_ADMIN` / `ROLE_EXTERNO`.
+- Lectura pública en endpoints de consulta; operaciones de escritura restringidas a `ADMIN`.
+
+## Base de datos y migraciones
+
+- Motor: PostgreSQL (local con Laragon).
+- Versionado: Flyway en `backend/src/main/resources/db/migration`.
+
+## Observabilidad y errores
+
+- **Correlation ID**:
+  - Se acepta `X-Correlation-Id`/`X-Request-Id` y si no existe se genera.
+  - Se retorna `X-Correlation-Id` en la respuesta y se registra en logs via MDC.
+- **Errores consistentes**:
+  - JSON con `errorCode`, `message`, `fieldErrors` (cuando aplica) + `correlationId`.
+
+## Pruebas
+
+- **Unit tests (Mockito)**: prueban servicios del core mockeando puertos.
+- **WebMvc tests**: verifican reglas de seguridad, correlation id y formatos de respuesta.
+- **SpringBootTest** con perfil `test` usando **H2** (evita depender de PostgreSQL para correr tests).

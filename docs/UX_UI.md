@@ -12,6 +12,7 @@
 
 - **Layout** con AppBar + navegación y contenido centrado.
 - **Formularios** con labels persistentes, validación y mensajes por campo.
+- **Selects para entidades**: en Productos e Inventario, el campo *Empresa NIT* se maneja como **listado desplegable** cargado desde backend (`/api/empresas`) para evitar búsquedas manuales.
 - **Tablas** con:
   - Empty state (“No hay datos…”) + CTA si aplica
   - Acciones por fila (editar/eliminar) con confirmación

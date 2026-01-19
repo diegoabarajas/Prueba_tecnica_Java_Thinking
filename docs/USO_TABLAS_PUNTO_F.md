@@ -151,4 +151,7 @@ El punto f) especifica que la base de datos debe cumplir con:
 
 ## Nota
 
-Todas estas funcionalidades están **completamente implementadas** y funcionando. Los endpoints están documentados en el código y siguen la arquitectura hexagonal del proyecto.
+Todas estas funcionalidades están **completamente implementadas** y funcionando en el **backend**.
+
+- El **frontend** actualmente no incluye pantallas para Categorías/Clientes/Órdenes (la prueba no lo exige explícitamente), pero puedes usarlas con Postman/Insomnia/cURL.
+- Recuerda: los endpoints de escritura requieren **ADMIN** (HTTP Basic), los de lectura son públicos.
