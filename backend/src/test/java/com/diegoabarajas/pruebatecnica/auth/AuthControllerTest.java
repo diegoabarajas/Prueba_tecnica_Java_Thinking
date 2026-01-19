@@ -1,7 +1,8 @@
 package com.diegoabarajas.pruebatecnica.auth;
 
-import com.diegoabarajas.pruebatecnica.config.SecurityConfig;
-import com.diegoabarajas.pruebatecnica.user.UsuarioRepository;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.auth.AuthController;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.security.SecurityConfig;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.user.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

@@ -1,10 +1,10 @@
 package com.diegoabarajas.pruebatecnica.security;
 
-import com.diegoabarajas.pruebatecnica.config.SecurityConfig;
-import com.diegoabarajas.pruebatecnica.empresa.EmpresaController;
-import com.diegoabarajas.pruebatecnica.empresa.EmpresaService;
-import com.diegoabarajas.pruebatecnica.user.Usuario;
-import com.diegoabarajas.pruebatecnica.user.UsuarioRepository;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.security.SecurityConfig;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.empresa.EmpresaController;
+import com.diegoabarajas.pruebatecnica.core.application.empresa.EmpresaService;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.user.Usuario;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.user.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;

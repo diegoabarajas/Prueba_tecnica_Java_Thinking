@@ -1,8 +1,10 @@
 package com.diegoabarajas.pruebatecnica.inventario;
 
-import com.diegoabarajas.pruebatecnica.empresa.EmpresaRepository;
-import com.diegoabarajas.pruebatecnica.producto.Producto;
-import com.diegoabarajas.pruebatecnica.producto.ProductoRepository;
+import com.diegoabarajas.pruebatecnica.adapters.out.pdf.InventarioPdfRenderer;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.empresa.EmpresaRepository;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.Producto;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.ProductoRepository;
+import com.diegoabarajas.pruebatecnica.core.application.inventario.InventarioService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

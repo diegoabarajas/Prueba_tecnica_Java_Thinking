@@ -1,5 +1,8 @@
 package com.diegoabarajas.pruebatecnica.empresa;
 
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.empresa.EmpresaRequest;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.empresa.EmpresaRepository;
+import com.diegoabarajas.pruebatecnica.core.application.empresa.EmpresaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -4,12 +4,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Punto de entrada de la aplicación Spring Boot.
+ * Punto de entrada de la aplicaciÃ³n Spring Boot.
  *
  * <p>Responsabilidad:
- * - Arrancar el contenedor Spring (inyección de dependencias, web server embebido, configuración, etc.).
+ * - Arrancar el contenedor Spring (inyecciÃ³n de dependencias, web server embebido, configuraciÃ³n, etc.).
  *
- * <p>Por diseño, esta clase no contiene lógica de negocio. Toda la lógica vive en los módulos por dominio
+ * <p>Por diseÃ±o, esta clase no contiene lÃ³gica de negocio. Toda la lÃ³gica vive en los mÃ³dulos por dominio
  * (empresa/producto/inventario/email) y se organiza por capas (Controller -> Service -> Repository).
  */
 @SpringBootApplication

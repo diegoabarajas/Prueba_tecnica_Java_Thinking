@@ -1,7 +1,13 @@
 package com.diegoabarajas.pruebatecnica.producto;
 
-import com.diegoabarajas.pruebatecnica.empresa.Empresa;
-import com.diegoabarajas.pruebatecnica.empresa.EmpresaRepository;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.producto.ProductoPrecioRequest;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.producto.ProductoRequest;
+import com.diegoabarajas.pruebatecnica.adapters.in.rest.producto.ProductoResponse;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.empresa.Empresa;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.empresa.EmpresaRepository;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.ProductoPrecioRepository;
+import com.diegoabarajas.pruebatecnica.adapters.out.persistence.producto.ProductoRepository;
+import com.diegoabarajas.pruebatecnica.core.application.producto.ProductoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
