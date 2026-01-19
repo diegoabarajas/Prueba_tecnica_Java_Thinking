@@ -32,3 +32,6 @@ Desktop.ini
 # === Local artifacts ===
 intento aws.jpg
 
+# === Documentos no subir a Git ===
+ap_multi_vistas.md
+PLAN_PROYECTO.md
