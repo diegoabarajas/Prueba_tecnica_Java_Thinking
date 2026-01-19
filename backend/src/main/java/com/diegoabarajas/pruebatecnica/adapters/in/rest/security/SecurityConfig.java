@@ -49,6 +49,13 @@ public class SecurityConfig {
 				.requestMatchers("/api/health").permitAll()
 				// Endpoint usado por el frontend para validar credenciales y obtener el rol real.
 				.requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
+				// Categorías: lectura pública; mutaciones ADMIN.
+				.requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/categorias/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.PUT, "/api/categorias/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole("ADMIN")
+				// Asignación de categorías a producto: ADMIN.
+				.requestMatchers(HttpMethod.PUT, "/api/productos/*/categorias").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.GET, "/api/empresas/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/inventario/**").permitAll()

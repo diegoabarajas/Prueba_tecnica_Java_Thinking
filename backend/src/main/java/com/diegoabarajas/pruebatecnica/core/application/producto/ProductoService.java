@@ -54,6 +54,22 @@ public class ProductoService {
 				.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public List<ProductWithPrices> listByCodigos(List<String> codigos) {
+		if (codigos == null || codigos.isEmpty()) return List.of();
+		List<Product> productos = productRepository.findByCodigos(codigos);
+		if (productos.isEmpty()) return List.of();
+
+		List<String> keys = productos.stream().map(Product::codigo).toList();
+		Map<String, List<ProductPrice>> preciosByCodigo = productPriceRepository.findByProductoCodigos(keys).stream()
+				.collect(Collectors.groupingBy(ProductPriceItem::productoCodigo,
+						Collectors.mapping(p -> new ProductPrice(p.moneda(), p.precio()), Collectors.toList())));
+
+		return productos.stream()
+				.map(p -> new ProductWithPrices(p, preciosByCodigo.getOrDefault(p.codigo(), List.of())))
+				.toList();
+	}
+
 	@Transactional
 	public ProductWithPrices create(CreateProductCommand req) {
 		if (productRepository.existsByCodigo(req.codigo())) {

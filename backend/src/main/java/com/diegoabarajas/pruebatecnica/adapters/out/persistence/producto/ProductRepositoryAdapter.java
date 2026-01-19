@@ -5,6 +5,7 @@ import com.diegoabarajas.pruebatecnica.core.application.producto.Product;
 import com.diegoabarajas.pruebatecnica.core.ports.out.persistence.ProductRepositoryPort;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,6 +35,11 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
 	@Override
 	public List<Product> findByEmpresaNit(String empresaNit) {
 		return productoRepository.findByEmpresa_Nit(empresaNit).stream().map(ProductRepositoryAdapter::toCore).toList();
+	}
+
+	@Override
+	public List<Product> findByCodigos(Collection<String> codigos) {
+		return productoRepository.findAllById(codigos).stream().map(ProductRepositoryAdapter::toCore).toList();
 	}
 
 	@Override
