@@ -9,7 +9,9 @@ import java.util.Map;
  */
 public record ApiErrorResponse(
 		Instant timestamp,
+		String correlationId,
 		int status,
+		String errorCode,
 		String error,
 		String message,
 		String path,

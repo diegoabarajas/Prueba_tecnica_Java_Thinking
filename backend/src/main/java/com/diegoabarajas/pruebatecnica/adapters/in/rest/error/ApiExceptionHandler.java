@@ -1,6 +1,9 @@
 package com.diegoabarajas.pruebatecnica.adapters.in.rest.error;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -32,6 +35,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+	private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
 		Map<String, String> fieldErrors = new HashMap<>();
@@ -41,7 +46,9 @@ public class ApiExceptionHandler {
 		}
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
+				correlationId(),
 				HttpStatus.BAD_REQUEST.value(),
+				"VALIDATION_ERROR",
 				HttpStatus.BAD_REQUEST.getReasonPhrase(),
 				"ValidaciÃ³n fallida",
 				req.getRequestURI(),
@@ -53,9 +60,17 @@ public class ApiExceptionHandler {
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity<ApiErrorResponse> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
 		HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
+		String code = errorCodeForStatus(status);
+		if (status.is4xxClientError()) {
+			log.warn("Request failed: status={}, errorCode={}, path={}, reason={}", status.value(), code, req.getRequestURI(), ex.getReason());
+		} else {
+			log.error("Request failed: status={}, errorCode={}, path={}, reason={}", status.value(), code, req.getRequestURI(), ex.getReason(), ex);
+		}
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
+				correlationId(),
 				status.value(),
+				code,
 				status.getReasonPhrase(),
 				ex.getReason(),
 				req.getRequestURI(),
@@ -71,7 +86,9 @@ public class ApiExceptionHandler {
 		// - Content-Type no soportado por el endpoint
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
+				correlationId(),
 				HttpStatus.BAD_REQUEST.value(),
+				"BAD_REQUEST",
 				HttpStatus.BAD_REQUEST.getReasonPhrase(),
 				"Solicitud invÃ¡lida",
 				req.getRequestURI(),
@@ -86,7 +103,9 @@ public class ApiExceptionHandler {
 		// Ejemplo: pedir PDF con "Accept: application/json" provoca 406.
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
+				correlationId(),
 				HttpStatus.NOT_ACCEPTABLE.value(),
+				"NOT_ACCEPTABLE",
 				HttpStatus.NOT_ACCEPTABLE.getReasonPhrase(),
 				"No aceptable",
 				req.getRequestURI(),
@@ -100,15 +119,37 @@ public class ApiExceptionHandler {
 		// Importante:
 		// - No retornamos el stacktrace al cliente (evita exponer informaciÃ³n sensible).
 		// - El stacktrace queda en logs del servidor para depuraciÃ³n.
+		log.error("Unhandled error: path={}", req.getRequestURI(), ex);
 		ApiErrorResponse body = new ApiErrorResponse(
 				Instant.now(),
+				correlationId(),
 				HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				"INTERNAL_ERROR",
 				HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
 				"Error interno",
 				req.getRequestURI(),
 				null
 		);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+	}
+
+	private static String correlationId() {
+		String v = MDC.get("correlationId");
+		return (v == null || v.isBlank()) ? null : v;
+	}
+
+	private static String errorCodeForStatus(HttpStatus status) {
+		return switch (status) {
+			case BAD_REQUEST -> "BAD_REQUEST";
+			case UNAUTHORIZED -> "UNAUTHORIZED";
+			case FORBIDDEN -> "FORBIDDEN";
+			case NOT_FOUND -> "NOT_FOUND";
+			case CONFLICT -> "CONFLICT";
+			case UNSUPPORTED_MEDIA_TYPE -> "UNSUPPORTED_MEDIA_TYPE";
+			case NOT_ACCEPTABLE -> "NOT_ACCEPTABLE";
+			case BAD_GATEWAY -> "BAD_GATEWAY";
+			default -> status.is5xxServerError() ? "INTERNAL_ERROR" : "ERROR";
+		};
 	}
 }
 
