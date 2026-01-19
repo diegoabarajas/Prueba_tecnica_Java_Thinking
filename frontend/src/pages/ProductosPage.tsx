@@ -17,11 +17,14 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "../auth/AuthContext";
 import { productosApi, type ProductoCreate, type Producto } from "../api/productos";
+import { empresasApi, type Empresa } from "../api/empresas";
 import { FeedbackSnackbar, type Feedback } from "../components/FeedbackSnackbar";
 
 export function ProductosPage() {
   const { auth, isAdmin } = useAuth();
-  const [empresaNit, setEmpresaNit] = React.useState("900123456");
+  const [empresaNit, setEmpresaNit] = React.useState("");
+  const [empresas, setEmpresas] = React.useState<Empresa[]>([]);
+  const [empresasLoading, setEmpresasLoading] = React.useState(false);
   const [items, setItems] = React.useState<Producto[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [feedback, setFeedback] = React.useState<Feedback>({ open: false, severity: "info", message: "" });
@@ -30,9 +33,25 @@ export function ProductosPage() {
     codigo: "",
     nombre: "",
     caracteristicas: "",
-    empresaNit: "900123456",
+    empresaNit: "",
     precios: [],
   });
+  const loadEmpresas = React.useCallback(async () => {
+    setEmpresasLoading(true);
+    try {
+      const data = await empresasApi.list();
+      setEmpresas(data);
+      if (!empresaNit && data.length > 0) {
+        setEmpresaNit(data[0].nit);
+        setForm((s) => ({ ...s, empresaNit: data[0].nit }));
+      }
+    } catch (e) {
+      setFeedback({ open: true, severity: "error", message: e instanceof Error ? e.message : "Error cargando empresas" });
+    } finally {
+      setEmpresasLoading(false);
+    }
+  }, [empresaNit]);
+
 
   const [moneda, setMoneda] = React.useState<"COP" | "USD" | "EU">("COP");
   const [precio, setPrecio] = React.useState<string>("");
@@ -50,8 +69,14 @@ export function ProductosPage() {
   }, [empresaNit]);
 
   React.useEffect(() => {
-    void load();
-  }, [load]);
+    void loadEmpresas();
+  }, [loadEmpresas]);
+
+  React.useEffect(() => {
+    if (empresaNit) {
+      void load();
+    }
+  }, [load, empresaNit]);
 
   const onCreate = async () => {
     try {
@@ -102,15 +127,28 @@ export function ProductosPage() {
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
             <TextField
               label="Empresa NIT"
+              select
+              SelectProps={{ native: true }}
               value={empresaNit}
               onChange={(e) => {
-                setEmpresaNit(e.target.value);
-                setForm((s) => ({ ...s, empresaNit: e.target.value }));
+                const nit = e.target.value;
+                setEmpresaNit(nit);
+                setForm((s) => ({ ...s, empresaNit: nit }));
               }}
-              helperText="Filtra por empresa"
-              sx={{ minWidth: 240 }}
-            />
-            <Button onClick={load} disabled={loading}>
+              helperText={empresasLoading ? "Cargando empresas..." : "Selecciona una empresa"}
+              sx={{ minWidth: 260 }}
+            >
+              {empresas.length === 0 ? (
+                <option value="">No hay empresas</option>
+              ) : (
+                empresas.map((e) => (
+                  <option key={e.nit} value={e.nit}>
+                    {e.nit} - {e.nombre}
+                  </option>
+                ))
+              )}
+            </TextField>
+            <Button onClick={load} disabled={loading || !empresaNit}>
               Refrescar
             </Button>
             <Box sx={{ flex: 1 }} />

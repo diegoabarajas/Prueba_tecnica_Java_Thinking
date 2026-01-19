@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class ProductoService {
 
-	private static final Set<String> MONEDAS_PERMITIDAS = Set.of("COP", "USD", "UE");
+	private static final Set<String> MONEDAS_PERMITIDAS = Set.of("COP", "USD", "EU");
 
 	private final ProductRepositoryPort productRepository;
 	private final CompanyRepositoryPort companyRepository;
