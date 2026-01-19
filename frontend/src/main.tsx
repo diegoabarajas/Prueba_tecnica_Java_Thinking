@@ -1,17 +1,27 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
+import { CircularProgress, Box } from "@mui/material";
 import { theme } from "./theme/theme";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./routes/RequireAuth";
 import { AppShell } from "./components/AppShell";
-import { LoginPage } from "./pages/LoginPage";
-import { EmpresasPage } from "./pages/EmpresasPage";
-import { ProductosPage } from "./pages/ProductosPage";
-import { InventarioPage } from "./pages/InventarioPage";
 import "./style.css";
+
+// Code splitting: cargar páginas bajo demanda para reducir bundle inicial
+const LoginPage = lazy(() => import("./pages/LoginPage").then(m => ({ default: m.LoginPage })));
+const EmpresasPage = lazy(() => import("./pages/EmpresasPage").then(m => ({ default: m.EmpresasPage })));
+const ProductosPage = lazy(() => import("./pages/ProductosPage").then(m => ({ default: m.ProductosPage })));
+const InventarioPage = lazy(() => import("./pages/InventarioPage").then(m => ({ default: m.InventarioPage })));
+
+// Componente de carga para Suspense
+const PageLoader = () => (
+  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
+    <CircularProgress />
+  </Box>
+);
 
 const router = createBrowserRouter([
   {
@@ -19,12 +29,21 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <Navigate to="/empresas" replace /> },
-      { path: "login", element: <LoginPage /> },
+      {
+        path: "login",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <LoginPage />
+          </Suspense>
+        ),
+      },
       {
         path: "empresas",
         element: (
           <RequireAuth>
-            <EmpresasPage />
+            <Suspense fallback={<PageLoader />}>
+              <EmpresasPage />
+            </Suspense>
           </RequireAuth>
         ),
       },
@@ -32,7 +51,9 @@ const router = createBrowserRouter([
         path: "productos",
         element: (
           <RequireAuth>
-            <ProductosPage />
+            <Suspense fallback={<PageLoader />}>
+              <ProductosPage />
+            </Suspense>
           </RequireAuth>
         ),
       },
@@ -40,7 +61,9 @@ const router = createBrowserRouter([
         path: "inventario",
         element: (
           <RequireAuth>
-            <InventarioPage />
+            <Suspense fallback={<PageLoader />}>
+              <InventarioPage />
+            </Suspense>
           </RequireAuth>
         ),
       },
