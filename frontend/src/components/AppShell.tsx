@@ -18,6 +18,17 @@ const linkStyle = ({ isActive }: { isActive: boolean }) => ({
   fontWeight: isActive ? 700 : 500,
 });
 
+/**
+ * Layout principal (barra superior + contenido).
+ *
+ * <p>Responsabilidad:
+ * - Renderizar navegación y estado de sesión (email/rol + logout).
+ * - Mostrar el contenido de rutas hijas con <Outlet />.
+ *
+ * <p>Decisiones:
+ * - Las pestañas (Empresas/Productos/Inventario) solo aparecen si hay sesión (isAuthed),
+ *   para no mostrar navegación “muerta” antes de login.
+ */
 export function AppShell() {
   const { isAuthed, isAdmin, auth, logout } = useAuth();
   const { pathname } = useLocation();

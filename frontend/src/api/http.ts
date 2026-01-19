@@ -1,5 +1,11 @@
 import { env } from "../config/env";
 
+/**
+ * Tipado del error estándar devuelto por el backend.
+ *
+ * <p>El backend usa {@code ApiExceptionHandler} para devolver siempre un JSON con esta forma cuando hay errores
+ * (validación, 404, 409, 500, etc.). Esto permite mostrar mensajes consistentes en UI.
+ */
 export type ApiErrorResponse = {
   timestamp?: string;
   status?: number;
@@ -9,6 +15,12 @@ export type ApiErrorResponse = {
   fieldErrors?: Record<string, string> | null;
 };
 
+/**
+ * Error que encapsula estado HTTP + body del backend.
+ *
+ * <p>Se usa para diferenciar:
+ * - Errores HTTP (401/403/404/409/500) vs. errores de código del frontend.
+ */
 export class ApiError extends Error {
   status?: number;
   body?: ApiErrorResponse | unknown;
@@ -26,6 +38,15 @@ export type AuthState = {
   role?: "ADMIN" | "EXTERNO";
 };
 
+/**
+ * Cliente HTTP minimalista para toda la app.
+ *
+ * <p>Responsabilidad:
+ * - Construir URL base usando {@code env.apiBaseUrl}
+ * - Adjuntar headers comunes (Accept/Content-Type) y Authorization Basic cuando aplica
+ * - Parsear respuestas JSON vs texto vs blob (PDF)
+ * - Lanzar {@link ApiError} en respuestas no-2xx para que la UI pueda manejar errores uniformemente
+ */
 export async function apiFetch<T>(
   path: string,
   opts: RequestInit & { auth?: AuthState; expectBlob?: boolean } = {}

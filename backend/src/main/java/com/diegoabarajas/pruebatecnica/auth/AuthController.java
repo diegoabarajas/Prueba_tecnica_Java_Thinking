@@ -10,6 +10,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+	/**
+	 * Devuelve información mínima del usuario autenticado.
+	 *
+	 * <p>Uso principal:
+	 * - El frontend usa este endpoint para validar credenciales (HTTP Basic) y obtener el rol real desde backend,
+	 *   en lugar de “asumir” un rol en el cliente.
+	 *
+	 * <p>Notas:
+	 * - Spring Security inyecta {@link Authentication} ya resuelto por el filtro de seguridad.
+	 * - El rol viene como authority con prefijo "ROLE_" (convención Spring).
+	 */
 	@GetMapping("/me")
 	public AuthMeResponse me(Authentication auth) {
 		String email = auth.getName();
