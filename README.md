@@ -1,4 +1,4 @@
-# Prueba técnica — Java (Spring Boot) + React + PostgreSQL
+# Prueba técnica — Java (Spring Boot) + Vue.js + PostgreSQL
 
 Proyecto full‑stack construido según el enunciado en `ap_multi_vistas.md`.
 
@@ -6,7 +6,7 @@ Proyecto full‑stack construido según el enunciado en `ap_multi_vistas.md`.
 
 - **Backend**: Java + Spring Boot + Spring Security (HTTP Basic) + JPA + Flyway
 - **DB**: PostgreSQL 14.5 (local en Laragon) + migraciones con Flyway
-- **Frontend**: React + Vite + TypeScript + MUI
+- **Frontend**: Vue.js 3 + Vite + TypeScript + Quasar Framework
 - **PDF**: Apache PDFBox
 - **Email**: AWS SES (adjunto PDF)
 
@@ -33,7 +33,8 @@ También se implementó:
 ## Estructura del repo
 
 - `backend/`: API Spring Boot
-- `frontend/`: React (Vite)
+- `frontend/`: Vue.js 3 + Quasar (Vite)
+- `front/`: Frontend React original (deprecated)
 - `docs/`: documentación complementaria
 
 ## Requisitos para correr local
@@ -137,14 +138,15 @@ Variables requeridas:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
-## Frontend (React)
+## Frontend (Vue.js 3 + Quasar Framework)
 
 ### 1) Configurar base URL del backend
 
-Por default usa `http://localhost:8080`. Si quieres cambiarlo, crea `frontend/.env`:
+Por default usa `http://localhost:8080`. Si quieres cambiarlo, edita `frontend/.env`:
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
+VITE_API_TIMEOUT=30000
 ```
 
 ### 2) Ejecutar frontend
@@ -159,10 +161,29 @@ Abrir:
 
 - `http://localhost:5173`
 
-Notas:
+### 3) Estructura del proyecto
 
-- Las pestañas de navegación se muestran **solo después de login**.
-- En Productos e Inventario, el filtro *Empresa NIT* se maneja con **listado desplegable** (carga desde `/api/empresas`).
+- `src/views/` → Páginas principales (Login, Dashboard, Empresas, Productos, etc.)
+- `src/components/` → Componentes reutilizables
+- `src/stores/` → Gestión de estado global con Pinia
+- `src/composables/` → Lógica reutilizable (useAuth, useApi)
+- `src/types/` → Interfaces TypeScript
+- `src/utils/` → Cliente HTTP Axios
+- `src/router.ts` → Configuración de rutas con guards
+
+### 4) Navegación post-login
+
+Las pestañas de navegación se muestran **solo después de login**. El menú lateral se oculta en la pantalla de inicio de sesión.
+
+### 5) Tecnologías usadas
+
+- **Vue.js 3** - Framework frontend progresivo con Composition API
+- **Quasar Framework** - Componentes UI de alta calidad (Material Design)
+- **Pinia** - Gestión de estado global
+- **Vue Router 4** - Enrutamiento client-side con navigation guards
+- **Axios** - Cliente HTTP para consumir la API REST
+- **TypeScript** - Tipado estático estricto
+- **Vite** - Bundler ultrarrápido
 
 ## Pruebas / Calidad
 

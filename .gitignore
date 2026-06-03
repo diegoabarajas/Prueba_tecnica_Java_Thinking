@@ -42,3 +42,10 @@ PLAN_PROYECTO.md
 credenciales aws.txt
 credenciales pagina.txt
 ejecuciones.txt
+
+# === Docker (configuración local, no versionada) ===
+docker-compose.yml
+docker/
+Makefile
+.dockerignore
+backend/.dockerignore
